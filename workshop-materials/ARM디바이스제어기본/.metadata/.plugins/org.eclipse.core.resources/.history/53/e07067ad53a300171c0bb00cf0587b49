@@ -1,0 +1,206 @@
+#include "device_driver.h"
+#include <stdlib.h>
+
+#define 	TEST	7	// Test Select: 1~7
+
+void MAIN(void)
+{
+/***********************************************************************/
+// Main �Լ��� ����
+/***********************************************************************/
+
+  #if (TEST == 1)
+
+	int i;
+
+	Uart_Init(115200);
+	Led_Init();
+	Timer4_Init();
+
+	Uart_Printf("Willtek WT2440L\n");
+
+	for(i=0;;i++)
+	{
+		Led_Display(1<<(i%4));
+		Timer4_Delay(500);
+	}
+
+  #endif
+
+/***********************************************************************/
+// �Ǽ��� �μ�
+/***********************************************************************/
+
+  #if (TEST == 2)
+
+	int value;
+
+	Uart_Init(115200);
+
+	Uart_Printf("Willtek WT2440L\n");
+	Uart_Printf("VALUE = %d\n", value = 10);
+	Uart_Printf("%d, %c, %f\n", 100, 'A', 3.14);
+	Uart_Printf("Bye~\n");
+
+  #endif
+
+/***********************************************************************/
+// ���̺귯�� �ʱ�ȭ, Heap ����
+/***********************************************************************/
+
+  #if (TEST == 3)
+
+	int value;
+
+	Run_Time_Config();
+	Uart_Init(115200);
+
+	Uart_Printf("Willtek WT2440L\n");
+	Uart_Printf("VALUE = %d\n", value = 10);
+	Uart_Printf("%d, %c, %f\n", 100, 'A', 3.14);
+
+	Uart_Printf("Heap_Start = 0x%X\n", Get_Heap_Base());
+	Uart_Printf("Heap_Limit = 0x%X\n", Get_Heap_Limit());
+
+	{
+		int *p = malloc(10 * sizeof(int));
+		int *q = malloc(10 * sizeof(int));
+
+		Uart_Printf("p=0x%X\n", p);
+		Uart_Printf("q=0x%X\n", q);
+	}
+
+  #endif
+
+/***********************************************************************/
+// Timer4�� �׼���
+/***********************************************************************/
+
+  #if ((TEST == 4) || (TEST == 5))
+
+	Run_Time_Config();
+	Uart_Init(115200);
+
+	Uart_Printf("Willtek WT2440L - Timer Test\n");
+
+	{
+		int i;
+		unsigned int a[10];
+
+		#include "2440addr.h"
+		#include "macro.h"
+
+		#define TCNTO4 (*(unsigned int *)0x51000040) // Timer4 Data
+
+		rTCNTB4 = 0xffff;
+
+		Macro_Write_Block(rTCFG0, 0xff, 0, 8); 	// PRS1 = 0
+		Macro_Write_Block(rTCFG1, 0xf, 2, 16);  // MUX4 = 1/8
+		Macro_Write_Block(rTCON, 0x7, 0x2, 20);
+		Macro_Write_Block(rTCON, 0x7, 0x1, 20); // Timer4 start
+
+	// �а� �μ��ϱ�
+
+	#if (TEST == 4)
+		for(i=0; i<10; i++)
+		{
+			a[i] = TCNTO4;
+			Uart_Printf("a[%d]=%u\n", i, a[i]);
+		}
+	#endif
+
+	// 10ȸ �о ������ �� �μ��ϱ�
+
+	#if (TEST == 5)
+		for(i=0; i<10; i++)
+		{
+			a[i] = TCNTO4;
+		}
+
+		for(i=0; i<10; i++)
+		{
+			Uart_Printf("a[%d]=%u\n", i, a[i]);
+		}
+	#endif
+
+		Macro_Clear_Bit(rTCON, 20); // Timer4 stop
+	}
+
+  #endif
+
+/***********************************************************************/
+// Timer4�� �׼��� ����
+/***********************************************************************/
+
+  #if (TEST == 6)
+
+	Run_Time_Config();
+	MMU_Init();
+	Uart_Init(115200);
+
+	Uart_Printf("Willtek WT2440L - Timer Test 2\n");
+
+	{
+		int i;
+		unsigned int a[10];
+
+		#include "2440addr.h"
+		#include "macro.h"
+
+		#define TCNTO4 (*(volatile unsigned int *)0x51000040) // Timer4 Data
+
+		rTCNTB4 = 0xffff;
+
+		Macro_Write_Block(rTCFG0, 0xff, 0, 8); 	// PRS1 = 0
+		Macro_Write_Block(rTCFG1, 0xf, 2, 16);  // MUX4 = 1/8
+		Macro_Write_Block(rTCON, 0x7, 0x2, 20);
+		Macro_Write_Block(rTCON, 0x7, 0x1, 20); // Timer4 start
+
+		for(i=0; i<10; i++)
+		{
+			a[i] = TCNTO4;
+		}
+
+		for(i=0; i<10; i++)
+		{
+			Uart_Printf("a[%d]=%u\n", i, a[i]);
+		}
+
+		Macro_Clear_Bit(rTCON, 20); // Timer4 stop
+	}
+
+  #endif
+
+/***********************************************************************/
+// LED Toggling
+/***********************************************************************/
+
+  #if (TEST == 7)
+
+	Run_Time_Config();
+	Uart_Init(115200);
+
+	Uart_Printf("Willtek WT2440L - LED Toggling Test\n");
+
+	{
+		#include "2440addr.h"
+
+		int i;
+
+		#define GPBCON (*(volatile unsigned int *)0x56000010)
+		#define GPBDAT (*(volatile unsigned int *)0x56000014)
+
+		GPBCON = (GPBCON & ~0xFF<<14) | (0x55<<14);
+		GPBDAT = (GPBDAT & ~0xF<<7) | (0xA<<7);
+
+		for(;;)
+		{
+			GPBDAT ^= 0xf<<7;
+			for(i=0; i<0x100000; i++);
+		}
+	}
+
+  #endif
+
+}
+

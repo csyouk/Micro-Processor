@@ -1,0 +1,68 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+RAM              0x30000000         0x01000000         xrw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD crt0.o
+LOAD C:\Program Files\CodeSourcery\Sourcery G++ Lite/arm-none-eabi/lib\libc.a
+LOAD C:\Program Files\CodeSourcery\Sourcery G++ Lite/lib/gcc/arm-none-eabi/4.4.1\libgcc.a
+
+.text           0x30000000       0xb0
+ crt0.o(.text)
+ .text          0x30000000       0xb0 crt0.o
+                0x30000000                __start
+ *(.text)
+                0x300000b0                . = ALIGN (0x4)
+
+.glue_7         0x300000b0        0x0
+ .glue_7        0x00000000        0x0 linker stubs
+
+.glue_7t        0x300000b0        0x0
+ .glue_7t       0x00000000        0x0 linker stubs
+
+.vfp11_veneer   0x300000b0        0x0
+ .vfp11_veneer  0x00000000        0x0 linker stubs
+
+.v4_bx          0x300000b0        0x0
+ .v4_bx         0x00000000        0x0 linker stubs
+
+.rodata         0x300000b0        0x0
+                0x300000b0                __RO_BASE__ = .
+ *(.rodata)
+ *(.rodata.*)
+                0x300000b0                . = ALIGN (0x4)
+                0x300000b0                __RO_LIMIT__ = .
+
+.data           0x300000b0        0x0
+                0x300000b0                __RW_BASE__ = .
+ *(.data)
+ .data          0x300000b0        0x0 crt0.o
+ *(.data.*)
+                0x300000b0                . = ALIGN (0x4)
+                0x300000b0                __RW_LIMIT__ = .
+                0x00000000                __RW_SIZE__ = SIZEOF (.data)
+                0x300000b0                __RW_LOAD_ADDR__ = LOADADDR (.data)
+
+.bss            0x300000b0        0x0
+                0x300000b0                __ZI_BASE__ = .
+ *(.bss)
+ .bss           0x300000b0        0x0 crt0.o
+ *(.bss.*)
+                0x300000b0                . = ALIGN (0x4)
+                0x300000b0                __ZI_LIMIT__ = .
+                0x00000000                __ZI_SIZE__ = SIZEOF (.bss)
+OUTPUT(dram_0x30000000.axf elf32-littlearm)
+
+.ARM.attributes
+                0x00000000       0x21
+ .ARM.attributes
+                0x00000000       0x21 crt0.o
+
+Cross Reference Table
+
+Symbol                                            File
+__start                                           crt0.o

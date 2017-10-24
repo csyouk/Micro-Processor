@@ -1,0 +1,207 @@
+
+Main.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <Sqr>:
+   0:	e0030090 	mul	r3, r0, r0
+   4:	e1a00003 	mov	r0, r3
+   8:	e12fff1e 	bx	lr
+
+0000000c <Add_7>:
+   c:	e0811000 	add	r1, r1, r0
+  10:	e081c002 	add	ip, r1, r2
+  14:	e59d0000 	ldr	r0, [sp]
+  18:	e08c1003 	add	r1, ip, r3
+  1c:	e59d2004 	ldr	r2, [sp, #4]
+  20:	e081c000 	add	ip, r1, r0
+  24:	e59d3008 	ldr	r3, [sp, #8]
+  28:	e08c0002 	add	r0, ip, r2
+  2c:	e0800003 	add	r0, r0, r3
+  30:	e12fff1e 	bx	lr
+
+00000034 <print_stack>:
+  34:	e1a0c00d 	mov	ip, sp
+  38:	e92dd830 	push	{r4, r5, fp, ip, lr, pc}
+  3c:	e24cb004 	sub	fp, ip, #4
+  40:	e1a04002 	mov	r4, r2
+  44:	e1a05003 	mov	r5, r3
+  48:	e1a02000 	mov	r2, r0
+  4c:	e1a03001 	mov	r3, r1
+  50:	e59f0038 	ldr	r0, [pc, #56]	; 90 <print_stack+0x5c>
+  54:	ebfffffe 	bl	0 <Uart_Printf>
+  58:	e1a02004 	mov	r2, r4
+  5c:	e1a03005 	mov	r3, r5
+  60:	e59f002c 	ldr	r0, [pc, #44]	; 94 <print_stack+0x60>
+  64:	ebfffffe 	bl	0 <Uart_Printf>
+  68:	e59b1004 	ldr	r1, [fp, #4]
+  6c:	e59f0024 	ldr	r0, [pc, #36]	; 98 <print_stack+0x64>
+  70:	ebfffffe 	bl	0 <Uart_Printf>
+  74:	e28b300c 	add	r3, fp, #12
+  78:	e893000c 	ldm	r3, {r2, r3}
+  7c:	e59f0018 	ldr	r0, [pc, #24]	; 9c <print_stack+0x68>
+  80:	ebfffffe 	bl	0 <Uart_Printf>
+  84:	e24bd014 	sub	sp, fp, #20
+  88:	e89d6830 	ldm	sp, {r4, r5, fp, sp, lr}
+  8c:	e12fff1e 	bx	lr
+  90:	00000000 	andeq	r0, r0, r0
+  94:	0000000c 	andeq	r0, r0, ip
+  98:	00000018 	andeq	r0, r0, r8, lsl r0
+  9c:	00000024 	andeq	r0, r0, r4, lsr #32
+
+000000a0 <print_int>:
+  a0:	e1a0c00d 	mov	ip, sp
+  a4:	e92dd800 	push	{fp, ip, lr, pc}
+  a8:	e1a01000 	mov	r1, r0
+  ac:	e24cb004 	sub	fp, ip, #4
+  b0:	e59f000c 	ldr	r0, [pc, #12]	; c4 <print_int+0x24>
+  b4:	ebfffffe 	bl	0 <Uart_Printf>
+  b8:	e24bd00c 	sub	sp, fp, #12
+  bc:	e89d6800 	ldm	sp, {fp, sp, lr}
+  c0:	e12fff1e 	bx	lr
+  c4:	00000030 	andeq	r0, r0, r0, lsr r0
+
+000000c8 <c_func>:
+  c8:	e1a0c00d 	mov	ip, sp
+  cc:	e92dd800 	push	{fp, ip, lr, pc}
+  d0:	e59f0010 	ldr	r0, [pc, #16]	; e8 <c_func+0x20>
+  d4:	e24cb004 	sub	fp, ip, #4
+  d8:	ebfffffe 	bl	0 <Uart_Printf>
+  dc:	e24bd00c 	sub	sp, fp, #12
+  e0:	e89d6800 	ldm	sp, {fp, sp, lr}
+  e4:	e12fff1e 	bx	lr
+  e8:	0000003c 	andeq	r0, r0, ip, lsr r0
+
+000000ec <Sys_Init>:
+  ec:	e1a0c00d 	mov	ip, sp
+  f0:	e92dd818 	push	{r3, r4, fp, ip, lr, pc}
+  f4:	e24cb004 	sub	fp, ip, #4
+  f8:	e1a04000 	mov	r4, r0
+  fc:	ebfffffe 	bl	0 <Run_Time_Config>
+ 100:	e59f001c 	ldr	r0, [pc, #28]	; 124 <Sys_Init+0x38>
+ 104:	ebfffffe 	bl	0 <Uart_Init>
+ 108:	ebfffffe 	bl	0 <MMU_Init>
+ 10c:	ebfffffe 	bl	0 <Led_Init>
+ 110:	e1a00004 	mov	r0, r4
+ 114:	ebfffffe 	bl	0 <Uart_Printf>
+ 118:	e24bd014 	sub	sp, fp, #20
+ 11c:	e89d6818 	ldm	sp, {r3, r4, fp, sp, lr}
+ 120:	e12fff1e 	bx	lr
+ 124:	0001c200 	andeq	ip, r1, r0, lsl #4
+
+00000128 <Main>:
+ 128:	e1a0c00d 	mov	ip, sp
+ 12c:	e92dd800 	push	{fp, ip, lr, pc}
+ 130:	e24cb004 	sub	fp, ip, #4
+ 134:	ebfffffe 	bl	0 <Run_Time_Config>
+ 138:	e59f002c 	ldr	r0, [pc, #44]	; 16c <Main+0x44>
+ 13c:	ebfffffe 	bl	0 <Uart_Init>
+ 140:	ebfffffe 	bl	0 <MMU_Init>
+ 144:	ebfffffe 	bl	0 <Led_Init>
+ 148:	e59f0020 	ldr	r0, [pc, #32]	; 170 <Main+0x48>
+ 14c:	ebfffffe 	bl	0 <Uart_Printf>
+ 150:	ebfffffe 	bl	0 <Asm_Print_Err>
+ 154:	e59f0018 	ldr	r0, [pc, #24]	; 174 <Main+0x4c>
+ 158:	ebfffffe 	bl	0 <Uart_Printf>
+ 15c:	e3a00000 	mov	r0, #0
+ 160:	e24bd00c 	sub	sp, fp, #12
+ 164:	e89d6800 	ldm	sp, {fp, sp, lr}
+ 168:	e12fff1e 	bx	lr
+ 16c:	0001c200 	andeq	ip, r1, r0, lsl #4
+ 170:	0000004c 	andeq	r0, r0, ip, asr #32
+ 174:	0000006c 	andeq	r0, r0, ip, rrx
+
+Disassembly of section .data:
+
+00000000 <uc>:
+   0:	80008080 	andhi	r8, r0, r0, lsl #1
+
+00000001 <sc>:
+   1:	00800080 	addeq	r0, r0, r0, lsl #1
+
+00000002 <us>:
+   2:	80008000 	andhi	r8, r0, r0
+
+00000004 <ss>:
+   4:	00008000 	andeq	r8, r0, r0
+
+00000008 <a>:
+   8:	00000064 	andeq	r0, r0, r4, rrx
+
+0000000c <p>:
+   c:	00000000 	andeq	r0, r0, r0
+
+00000010 <x>:
+  10:	0000000a 	andeq	r0, r0, sl
+  14:	00000014 	andeq	r0, r0, r4, lsl r0
+  18:	0000001e 	andeq	r0, r0, lr, lsl r0
+  1c:	00000028 	andeq	r0, r0, r8, lsr #32
+
+Disassembly of section .rodata.str1.4:
+
+00000000 <.rodata.str1.4>:
+   0:	203d2061 	eorscs	r2, sp, r1, rrx
+   4:	6c257830 	stcvs	8, cr7, [r5], #-192	; 0xffffff40
+   8:	000a786c 	andeq	r7, sl, ip, ror #16
+   c:	203d2062 	eorscs	r2, sp, r2, rrx
+  10:	6c257830 	stcvs	8, cr7, [r5], #-192	; 0xffffff40
+  14:	000a786c 	andeq	r7, sl, ip, ror #16
+  18:	203d2063 	eorscs	r2, sp, r3, rrx
+  1c:	78257830 	stmdavc	r5!, {r4, r5, fp, ip, sp, lr}
+  20:	0000000a 	andeq	r0, r0, sl
+  24:	203d2064 	eorscs	r2, sp, r4, rrx
+  28:	6c257830 	stcvs	8, cr7, [r5], #-192	; 0xffffff40
+  2c:	000a786c 	andeq	r7, sl, ip, ror #16
+  30:	756c6156 	strbvc	r6, [ip, #-342]!	; 0x156
+  34:	203d2065 	eorscs	r2, sp, r5, rrx
+  38:	000a6425 	andeq	r6, sl, r5, lsr #8
+  3c:	75462d43 	strbvc	r2, [r6, #-3395]	; 0xd43
+  40:	6974636e 	ldmdbvs	r4!, {r1, r2, r3, r5, r6, r8, r9, sp, lr}^
+  44:	0a216e6f 	beq	85ba08 <Main+0x85b8e0>
+  48:	00000000 	andeq	r0, r0, r0
+  4c:	4350410a 	cmpmi	r0, #-2147483646	; 0x80000002
+  50:	43202c53 	teqmi	r0, #21248	; 0x5300
+  54:	4d53412d 	ldfmie	f4, [r3, #-180]	; 0xffffff4c
+  58:	746e4920 	strbtvc	r4, [lr], #-2336	; 0x920
+  5c:	61667265 	cmnvs	r6, r5, ror #4
+  60:	54206563 	strtpl	r6, [r0], #-1379	; 0x563
+  64:	20747365 	rsbscs	r7, r4, r5, ror #6
+  68:	000a3223 	andeq	r3, sl, r3, lsr #4
+  6c:	7465520a 	strbtvc	r5, [r5], #-522	; 0x20a
+  70:	656e7275 	strbvs	r7, [lr, #-629]!	; 0x275
+  74:	000a2164 	andeq	r2, sl, r4, ror #2
+
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	43434700 	movtmi	r4, #14080	; 0x3700
+   4:	5328203a 	teqpl	r8, #58	; 0x3a
+   8:	6372756f 	cmnvs	r2, #465567744	; 0x1bc00000
+   c:	20797265 	rsbscs	r7, r9, r5, ror #4
+  10:	202b2b47 	eorcs	r2, fp, r7, asr #22
+  14:	6574694c 	ldrbvs	r6, [r4, #-2380]!	; 0x94c
+  18:	31303220 	teqcc	r0, r0, lsr #4
+  1c:	2d317130 	ldfcss	f7, [r1, #-192]!	; 0xffffff40
+  20:	29383831 	ldmdbcs	r8!, {r0, r4, r5, fp, ip, sp}
+  24:	342e3420 	strtcc	r3, [lr], #-1056	; 0x420
+  28:	Address 0x00000028 is out of bounds.
+
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00003041 	andeq	r3, r0, r1, asr #32
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000026 	andeq	r0, r0, r6, lsr #32
+  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
+  14:	54303239 	ldrtpl	r3, [r0], #-569	; 0x239
+  18:	08020600 	stmdaeq	r2, {r9, sl}
+  1c:	12010901 	andne	r0, r1, #16384	; 0x4000
+  20:	15011404 	strne	r1, [r1, #-1028]	; 0x404
+  24:	18031701 	stmdane	r3, {r0, r8, r9, sl, ip}
+  28:	1a011901 	bne	46434 <Main+0x4630c>
+  2c:	2c021e01 	stccs	14, cr1, [r2], {1}
+  30:	Address 0x00000030 is out of bounds.
+

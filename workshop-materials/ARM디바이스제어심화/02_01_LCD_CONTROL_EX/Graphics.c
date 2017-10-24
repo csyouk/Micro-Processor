@@ -6,6 +6,28 @@
 #include <string.h>
 #include "device_driver.h"
 
+#define REGISTER 0
+#define DATA 1
+#define ELEMENTS(X) (sizeof(X)/sizeof(X[0]))
+
+int LCD_CONFIG[13][2] = {
+	// {register, data}
+		{0x0001,0x7300}, // set display method
+		{0x0002,0x0200},
+		{0x0003,0x6364},
+		{0x0004,0x04cf}, // set interface method (0x04cf means Serial RGB)
+		{0x0005,0xbcd4},
+		{0x000a,0x4008},
+		{0x000b,0xd400},
+		{0x000d,0x3229},
+		{0x000e,0x3200},
+		{0x000f,0x0000}, // set scan line
+		{0x0016,0x9f80}, // set horizontal resolution
+		{0x0017,0x3fff}, // set horizontal & vertical porch range
+		{0x001e,0x0052}
+};
+
+
 //////////////////// GBOX LCD SPI Control ////////////////////////
 
 #define LCD_SPI0_CLK		(20000000)
@@ -200,6 +222,7 @@ void Lcd_Select_Display_Frame_Buffer(unsigned int id)
 
 void Lcd_Graphic_Init(void)
 {
+	int i;
 	Lcd_Port_Init();
 	Lcd_Init();
 	Lcd_Reset(0);
@@ -208,19 +231,10 @@ void Lcd_Graphic_Init(void)
    	Lcd_Set_Address(LCD_FB0);
 
 	SPI0_LCD_Init();
-	SPI0_LCD_Write(0x0001,0x7300);
-	SPI0_LCD_Write(0x0002,0x0200);
-	SPI0_LCD_Write(0x0003,0x6364);
-	SPI0_LCD_Write(0x0004,0x04cf);
-	SPI0_LCD_Write(0x0005,0xbcd4);
-	SPI0_LCD_Write(0x000a,0x4008);
-	SPI0_LCD_Write(0x000b,0xd400);
-	SPI0_LCD_Write(0x000d,0x3229);
-	SPI0_LCD_Write(0x000e,0x3200);
-	SPI0_LCD_Write(0x000f,0x0000);
-	SPI0_LCD_Write(0x0016,0x9f80);
-	SPI0_LCD_Write(0x0017,0x3fff);
-	SPI0_LCD_Write(0x001e,0x0052);
+	for(i = 0; i < ELEMENTS(LCD_CONFIG); i++){
+		SPI0_LCD_Write(LCD_CONFIG[i][REGISTER], LCD_CONFIG[i][DATA]);
+	}
+
 
 	Lcd_Clr_Screen(0);
 	Lcd_Envid_On_Off(1);

@@ -1,0 +1,8 @@
+
+
+
+void Touch_Init(void){
+	Touch_ISR_Enable(1);
+
+
+}

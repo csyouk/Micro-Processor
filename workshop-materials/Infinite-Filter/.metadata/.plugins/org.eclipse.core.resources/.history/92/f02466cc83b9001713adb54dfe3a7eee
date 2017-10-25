@@ -93,7 +93,6 @@ void Main(void)
 		// camera
 		if(CAM_Get_Capture_Status() == 2)
 		{
-			Uart_Printf("Capture status\n");
 			CAM_Set_Capture_Status(0);
 			q = CAM_Get_Image_Address();
 			Lcd_Select_Draw_Frame_Buffer(frm);

@@ -61,7 +61,6 @@ void Main(void)
 	Camera_Init();
 
 	while(1){
-		// touch event
 		if(Touch_pressed)
 		{
 			RP = WP = 0;
@@ -89,18 +88,6 @@ void Main(void)
 				}
 			}
 		}
-
-		// camera
-		if(CAM_Get_Capture_Status() == 2)
-		{
-			Uart_Printf("Capture status\n");
-			CAM_Set_Capture_Status(0);
-			q = CAM_Get_Image_Address();
-			Lcd_Select_Draw_Frame_Buffer(frm);
-			Lcd_Draw_Cam_Image(0, 0, (void *)q, Cam_Width, Cam_Height);
-			Lcd_Select_Display_Frame_Buffer(frm);
-			Toggle_Frame();
-		}
 	}
 }
 
@@ -123,7 +110,23 @@ void Camera_Interrupt_Test(void)
 
 		do
 		{
+			if(CAM_Get_Capture_Status() == 2)
+			{
+				CAM_Set_Capture_Status(0);
+				q = CAM_Get_Image_Address();
+				Lcd_Select_Draw_Frame_Buffer(frm);
+				Lcd_Draw_Cam_Image(0, 0, (void *)q, Cam_Width, Cam_Height);
+				Lcd_Printf(10,10,GREEN,RED,1,1,"(ÁÖ)ÀªÅØ ±³À°»ç¾÷ºÎ");
+				Lcd_Select_Display_Frame_Buffer(frm);
+				Toggle_Frame();
+			}
 
+			if(Key_value)
+			{
+				if(Key_value == 1) CAM_Capture_Pause();
+				else if(Key_value == 3) CAM_Capture_Restart();
+				Key_value = 0;
+			}
 
 		}while(!Uart_Get_Pressed());
 

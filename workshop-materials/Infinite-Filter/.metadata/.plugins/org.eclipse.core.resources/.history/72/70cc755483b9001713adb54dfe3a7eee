@@ -1,5 +1,4 @@
-extern int Cam_Width;
-extern int Cam_Height;
+
 
 
 void Touch_Init(void){

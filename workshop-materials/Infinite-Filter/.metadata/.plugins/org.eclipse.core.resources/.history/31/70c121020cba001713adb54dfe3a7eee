@@ -1,0 +1,8 @@
+#include "device_driver.h"
+#define BLOCK 100
+void Save_Img_To_Nand(void){
+	unsigned int addr = Nand_Page_2_Addr(BLOCK, 0, 0);
+	unsigned short *q = (unsigned short *)CAM_Check_Image_Ready();
+
+
+}

@@ -342,6 +342,7 @@ extern void Lcd_Draw_Cam_Image_Edge_Detect(int x, int y, const unsigned short *f
 extern void Lcd_Draw_Cam_Image_Emboss_Filter(int x, int y, const unsigned short *fp, int width, int height);
 extern void Lcd_Draw_Cam_Image_Gray_Average_Filter(int x, int y, const unsigned short *fp, int width, int height);
 extern void Lcd_Draw_Cam_Image_Gray_Luminosity_Filter(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Sepia_Mode(int x, int y, const unsigned short *fp, int width, int height);
 
 extern void Lcd_Draw_Cam_Image_Large(int x, int y, const unsigned short *fp, int width, int height, int startx, int starty, int w, int h);
 

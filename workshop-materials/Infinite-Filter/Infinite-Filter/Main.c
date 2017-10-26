@@ -3,6 +3,7 @@
 #include "device_driver.h"
 #include "macro.h"
 #include "Init.h"
+#include "custom.h"
 
 /* 5:5:5:I Color Definition */
 
@@ -27,7 +28,7 @@ int Cam_Width  = 320;
 int Cam_Height = 240;
 int Cam_Exp_Mode = 0;
 
-static int frm = 0;
+int frm = 0;
 
 void Toggle_Frame(void)
 {
@@ -39,23 +40,25 @@ static void (*Filters[])(int x, int y, const unsigned short *fp, int width, int 
 {
 		Lcd_Draw_Cam_Image,
 		Lcd_Draw_Cam_Image_Sharpen_Filter,
-		Lcd_Draw_Cam_Image_Outline_Filter,
+//		Lcd_Draw_Cam_Image_Outline_Filter,
 		Lcd_Draw_Cam_Image_Blur_Filter,
 		Lcd_Draw_Cam_Image_Edge_Detect,
 		Lcd_Draw_Cam_Image_Emboss_Filter,
 		Lcd_Draw_Cam_Image_Gray_Average_Filter,
 		Lcd_Draw_Cam_Image_Gray_Luminosity_Filter,
+		Lcd_Draw_Cam_Sepia_Mode,
 };
 
 static char * modes[] = {
 		"Default",
 		"Sharpen_Filter",
-		"Outline_Filter",
+//		"Outline_Filter",
 		"Blur Filter",
-		"Edge Detect",
+		"Edge Detect Filter",
 		"Emboss Filter",
 		"Gray Average Filter",
 		"Gray Luminosity Filter",
+		"Sephia Mode"
 };
 
 // Drag & Drop
@@ -98,30 +101,49 @@ void Main(void)
 			Lcd_Select_Draw_Frame_Buffer(frm);
 
 			Filters[mode](0, 0, (void *)q, Cam_Width, Cam_Height);
-
+			Lcd_Printf(10,10, GREEN, BLACK, 1,1, modes[mode]);
 			Lcd_Select_Display_Frame_Buffer(frm);
 			Toggle_Frame();
 
-			// switch filter
-			if(Key_value == 2){
-				mode++;
-				if(mode > ELEMENTS(Filters)-1) mode = 0;
-				Uart_Printf("%s mode \n", modes[mode]);
-				Key_value=0;
-			}
-			else if(Key_value == 4){
-				mode--;
-				if(mode < 0) mode = ELEMENTS(Filters)-1;
-				Uart_Printf("%s mode \n", modes[mode]);
-				Key_value=0;
-			}
-
-			// Capture
-			else if(Key_value == 5){
-
-			}
 		}
 
+		// switch filter
+		switch(Key_value){
+		case 2:
+			mode++;
+			if(mode > ELEMENTS(Filters)-1) mode = 0;
+			Uart_Printf("%s mode \n", modes[mode]);
+			Key_value=0;
+			break;
+		case 4:
+			mode--;
+			if(mode < 0) mode = ELEMENTS(Filters)-1;
+			Uart_Printf("%s mode \n", modes[mode]);
+			Key_value=0;
+			break;
+		case 5:
+			Uart_Printf("capture pause \n");
+			CAM_Capture_Pause();
+			Key_value=0;
+			break;
+		case 6:
+			Uart_Printf("capture restart \n");
+			Enable_Capture();
+			CAM_Capture_Restart();
+			Key_value=0;
+			break;
+		case 7:
+			Uart_Printf("Save img to nand !!!!\n");
+			Save_Img_To_Nand();
+			Key_value=0;
+			break;
+		case 8:
+			Uart_Printf("Load img from nand !!!!FILE_SIZE * 4\n");
+			Disable_Capture();
+			Show_Saved_Img();
+			Key_value=0;
+			break;
+		}
 	}
 }
 

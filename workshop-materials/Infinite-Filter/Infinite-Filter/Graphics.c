@@ -568,6 +568,59 @@ void Lcd_Put_Cam_Pixel(int x,int y,unsigned int color)
 	}
 }
 
+void Lcd_Put_Cam_Pixel555(int x,int y,unsigned int color)
+{
+	register int  r,g,b;
+
+
+	r = (color >> 11) & (0x1f);
+	g = (color >> 6) & (0x1f);
+	b = (color) & (0x1f);
+	color = (r+g+b)/3;
+
+	// 16bpp(5:6:5) mode => 5:5:5:I format
+	if(Frame_Mode == LAYER_MODE)
+	{
+		Fb_Layer[y][3*x] 	= (color << 19) & (0xf80000);
+		Fb_Layer[y][3*x+1] = (color << 19) & (0xf80000);
+		Fb_Layer[y][3*x+2] = (color << 19) & (0xf80000);
+	}
+	else
+	{
+		Fb_Frame[y][3*x] 	= (color << 8) & (0xf80000);
+		Fb_Frame[y][3*x+1] = (color << 13) & (0xfc0000);
+		Fb_Frame[y][3*x+2] = (color << 19) & (0xf80000);
+	}
+}
+
+
+void Lcd_Put_Cam_Pixel_Luminosity(int x,int y,unsigned int color)
+{
+	register int  r,g,b;
+
+
+	r = (color >> 11) & (0x1f);
+	g = (color >> 6) & (0x1f);
+	b = (color) & (0x1f);
+	color = (21*r+72*g+7*b)/100;
+
+	// 16bpp(5:6:5) mode => 5:5:5:I format
+	if(Frame_Mode == LAYER_MODE)
+	{
+		Fb_Layer[y][3*x] 	= (color << 19) & (0xf80000);
+		Fb_Layer[y][3*x+1] = (color << 19) & (0xf80000);
+		Fb_Layer[y][3*x+2] = (color << 19) & (0xf80000);
+	}
+	else
+	{
+		Fb_Frame[y][3*x] 	= (color << 8) & (0xf80000);
+		Fb_Frame[y][3*x+1] = (color << 13) & (0xfc0000);
+		Fb_Frame[y][3*x+2] = (color << 19) & (0xf80000);
+	}
+}
+
+///////////////////////// Filters ///////////////////////////////
+
 void Lcd_Draw_Cam_Image(int x, int y, const unsigned short *fp, int width, int height)
 {
 	register int xx, yy;
@@ -580,6 +633,165 @@ void Lcd_Draw_Cam_Image(int x, int y, const unsigned short *fp, int width, int h
 		}
 	}
 }
+
+
+
+
+void Lcd_Draw_Cam_Image_Sharpen_Filter(int x, int y, const unsigned short *fp, int width, int height){
+	register int xx, yy, k, r,nx,ny;
+	static int dx[] = {0,0,-1,1};
+	static int dy[] = {-1,1,0,0};
+	int DIRS=4;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			r = 5*(int)fp[yy*width+xx];
+			for( k = 0; k < DIRS; k++){
+				nx = xx + dx[k]; ny = yy + dy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+
+				r -= (int)fp[ny*width+nx];
+			}
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,r);
+		}
+	}
+}
+
+
+void Lcd_Draw_Cam_Image_Outline_Filter(int x, int y, const unsigned short *fp, int width, int height){
+
+	register int xx, yy, k, r,nx,ny;
+	static int dx[] = {-1,-1,0,1,1,1,0,-1};
+	static int dy[] = {0,-1,-1,-1,0,1,1,1};
+	int DIRS=8;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			r = 8*(int)fp[yy*width+xx];
+			for(k=0; k<DIRS; k++){
+				nx = xx + dx[k];
+				ny = yy + dy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+				r-= (int)fp[ny*width+nx];
+			}
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,r);
+		}
+	}
+//	Uart_Printf("done!");
+}
+
+
+void Lcd_Draw_Cam_Image_Blur_Filter(int x, int y, const unsigned short *fp, int width, int height){
+
+	register int xx, yy, k, r,nx,ny;
+	static int dx[] = {0,0,-1,1};
+	static int dy[] = {-1,1,0,0};
+	int DIRS = 4;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			r = (int)fp[yy*width+xx];
+			for(k=0; k < DIRS; k++){
+				nx = xx + dx[k];
+				ny = yy + dy[k];
+				if(ny < 0 || ny > 240 || nx < 0 || nx > 320) continue;
+				r+= (int)fp[ny*width+nx];
+			}
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,r);
+		}
+	}
+}
+
+
+void Lcd_Draw_Cam_Image_Edge_Detect(int x, int y, const unsigned short *fp, int width, int height){
+
+	register int xx, yy, k, r,nx,ny;
+	static int dx[] = {0,0,-1,1};
+	static int dy[] = {-1,1,0,0};
+	int DIRS = 4;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			r = (-4)*(int)fp[yy*width+xx];
+			for(k=0; k < DIRS; k++){
+				nx = xx + dx[k];
+				ny = yy + dy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+				r+= (int)fp[ny*width+nx];
+			}
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,r);
+		}
+	}
+}
+
+
+void Lcd_Draw_Cam_Image_Emboss_Filter(int x, int y, const unsigned short *fp, int width, int height){
+
+	register int xx, yy, k, r,nx,ny;
+	static int dy[] = {0,-1,-1,0,1,1};
+	static int dx[] = {-1,-1,0,1,1,0};
+	static int w[] =  {-1,-2,-1,1,2,1};
+
+	int DIRS = 3;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			r = (int)fp[yy*width+xx];
+			for(k=0; k < DIRS; k++){
+				nx = xx + dx[k];
+				ny = yy + dy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+				r += w[k]*(int)fp[ny*width+nx];
+			}
+			for(k=DIRS; k < 2*DIRS; k++){
+				nx = xx + dx[k];
+				ny = yy + dy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+				r += w[2*k]*(int)fp[ny*width+nx];
+			}
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,r);
+		}
+	}
+}
+
+
+void Lcd_Draw_Cam_Image_Gray_Average_Filter(int x, int y, const unsigned short *fp, int width, int height){
+
+	register int xx, yy;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			Lcd_Put_Cam_Pixel555(xx+x,yy+y,(int)fp[yy*width+xx]);
+		}
+	}
+}
+
+
+void Lcd_Draw_Cam_Image_Gray_Luminosity_Filter(int x, int y, const unsigned short *fp, int width, int height){
+
+	register int xx, yy;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			Lcd_Put_Cam_Pixel_Luminosity(xx+x,yy+y,(int)fp[yy*width+xx]);
+		}
+	}
+}
+
 
 void Lcd_Draw_Cam_Image_Large(int x, int y, const unsigned short *fp, int width, int height, int startx, int starty, int w, int h)
 {

@@ -335,6 +335,14 @@ extern void Lcd_Draw_BMP(int x, int y, const unsigned short int *fp);
 extern void Lcd_Draw_Image(int x, int y, const unsigned short int *fp, int width, int height);
 extern void Lcd_Get_Info_BMP(int * x, int  * y, const unsigned short int *fp);
 extern void Lcd_Draw_Cam_Image(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Sharpen_Filter(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Outline_Filter(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Blur_Filter(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Edge_Detect(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Emboss_Filter(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Gray_Average_Filter(int x, int y, const unsigned short *fp, int width, int height);
+extern void Lcd_Draw_Cam_Image_Gray_Luminosity_Filter(int x, int y, const unsigned short *fp, int width, int height);
+
 extern void Lcd_Draw_Cam_Image_Large(int x, int y, const unsigned short *fp, int width, int height, int startx, int starty, int w, int h);
 
 extern void Lcd_Draw_Line(int x1,int y1,int x2,int y2,int color);

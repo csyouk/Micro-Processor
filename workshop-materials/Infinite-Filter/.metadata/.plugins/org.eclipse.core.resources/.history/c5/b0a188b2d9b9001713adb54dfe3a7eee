@@ -1,0 +1,26 @@
+extern int Cam_Width;
+extern int Cam_Height;
+
+
+void Touch_Init(void){
+	Touch_ISR_Enable(1);
+}
+void Camera_Init(void){
+
+	Lcd_Control_Brightness(5);
+	Lcd_Select_Buffer_Mode(LAYER_MODE);
+ 	Lcd_Select_Draw_Frame_Buffer(0);
+ 	Lcd_Select_Display_Frame_Buffer(0);
+	Lcd_Set_Trans_Mode(0);
+	Lcd_Set_Shape_Mode(0,0);
+	Lcd_Set_Shape_Back_Image_Mode(0, (void *)0);
+ 	Lcd_Clr_Screen(RED);
+
+	CAM_Set_Capture_Status(0);
+	CAM_Capture_Run(0,0,0);
+	CAM_Capture_Run(1, Cam_Width, Cam_Height);
+	CAM_XY_Flip(0,1);
+
+	Key_ISR_Enable(1);
+	CAM_Interrupt_Enable(1);
+}

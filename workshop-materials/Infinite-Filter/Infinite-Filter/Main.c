@@ -29,6 +29,8 @@ int Cam_Height = 240;
 int Cam_Exp_Mode = 0;
 
 int frm = 0;
+int dis;
+unsigned short * captured_img;
 
 void Toggle_Frame(void)
 {
@@ -39,33 +41,39 @@ void Toggle_Frame(void)
 static void (*Filters[])(int x, int y, const unsigned short *fp, int width, int height) =
 {
 		Lcd_Draw_Cam_Image,
-		Lcd_Draw_Cam_Image_Sharpen_Filter,
-//		Lcd_Draw_Cam_Image_Outline_Filter,
 		Lcd_Draw_Cam_Image_Blur_Filter,
+		Lcd_Draw_Cam_Image_Sharpen_Filter,
+		Lcd_Draw_Cam_Image_Sobel_Filter,
 		Lcd_Draw_Cam_Image_Edge_Detect,
 		Lcd_Draw_Cam_Image_Emboss_Filter,
 		Lcd_Draw_Cam_Image_Gray_Average_Filter,
 		Lcd_Draw_Cam_Image_Gray_Luminosity_Filter,
 		Lcd_Draw_Cam_Sepia_Mode,
+		Lcd_Draw_Cam_Touch_Filter_Mode,
+		Lcd_Draw_Cam_Touch_Filter_With_Circle_Mode,
+		Lcd_Draw_Cam_Laplacian_Filter,
 };
 
 static char * modes[] = {
 		"Default",
-		"Sharpen_Filter",
-//		"Outline_Filter",
 		"Blur Filter",
+		"Sharpen_Filter",
+		"Sobel Filter",
 		"Edge Detect Filter",
 		"Emboss Filter",
 		"Gray Average Filter",
 		"Gray Luminosity Filter",
-		"Sephia Mode"
+		"Sephia Mode",
+		"Touch Filter",
+		"Touch Circle",
+		"Laplacian Filter"
 };
 
 // Drag & Drop
 void Main(void)
 {
-	int dis, lock = 0, mode = 0;
-	unsigned short *q;
+	int lock = 0, mode = 0;
+
 	Touch p_event;
 	p_event.x = p_event.y = 0;
 	dis = 0;
@@ -90,21 +98,20 @@ void Main(void)
 
 		if(!Touch_pressed && lock){
 			Uart_Printf("Total distance : %d\n", dis);
-			dis = 0; lock = 0;
+			lock = 0;
 		}
 
 		// camera
 		if(CAM_Get_Capture_Status() == 2)
 		{
 			CAM_Set_Capture_Status(0);
-			q = CAM_Get_Image_Address();
+			captured_img = CAM_Get_Image_Address();
 			Lcd_Select_Draw_Frame_Buffer(frm);
 
-			Filters[mode](0, 0, (void *)q, Cam_Width, Cam_Height);
+			Filters[mode](0, 0, (void *)captured_img, Cam_Width, Cam_Height);
 			Lcd_Printf(10,10, GREEN, BLACK, 1,1, modes[mode]);
 			Lcd_Select_Display_Frame_Buffer(frm);
 			Toggle_Frame();
-
 		}
 
 		// switch filter
@@ -134,12 +141,13 @@ void Main(void)
 			break;
 		case 7:
 			Uart_Printf("Save img to nand !!!!\n");
+			CAM_Capture_Pause();
 			Save_Img_To_Nand();
 			Key_value=0;
 			break;
 		case 8:
-			Uart_Printf("Load img from nand !!!!FILE_SIZE * 4\n");
-			Disable_Capture();
+			Uart_Printf("Load img from nand !!!!\n");
+			CAM_Capture_Pause();
 			Show_Saved_Img();
 			Key_value=0;
 			break;

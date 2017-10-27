@@ -1,9 +1,9 @@
-#include "2440addr.h"
-#include "option.h"
-#include "macro.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "2440addr.h"
+#include "option.h"
+#include "macro.h"
 #include "device_driver.h"
 
 //////////////////// GBOX LCD SPI Control ////////////////////////
@@ -16,10 +16,14 @@
 #define LCD_DATA			(1<<1)
 #define LCD_ID				(0x1c<<2)
 #define SPI0_WAIT_SEND()	while(!(rSPSTA0 & 1))
-
+#define SQR(X) ((X)*(X))
 void SPI0_LCD_Init(void);
 void SPI0_LCD_Write(int reg, int data);
 
+extern int dis;
+extern volatile int Touch_x, Touch_y;
+
+int pre_x, pre_y;
 void SPI0_LCD_Init(void)
 {
 	double d;
@@ -634,6 +638,45 @@ void Lcd_Draw_Cam_Image(int x, int y, const unsigned short *fp, int width, int h
 	}
 }
 
+void Lcd_Draw_Cam_Touch_Filter_With_Circle_Mode(int x, int y, const unsigned short *fp, int width, int height)
+{
+	register int xx, yy;
+
+	int radius = 30;
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			if(Touch_x == pre_x && Touch_y == pre_y){
+				Lcd_Put_Cam_Pixel(xx+x,yy+y,(int)fp[yy*width+xx]);
+				continue;
+			}
+			if(SQR(Touch_x - xx) + SQR(Touch_y - yy) < radius*radius){
+				Lcd_Put_Cam_Pixel(xx+x,yy+y,dis);
+				continue;
+			}
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,(int)(fp[yy*width+xx] + dis));
+		}
+	}
+	 pre_x = Touch_x; pre_y = Touch_y;
+//	 Uart_Printf("%d %d - %d %d\n", pre_x, pre_y, Touch_x, Touch_y);
+}
+
+
+
+void Lcd_Draw_Cam_Touch_Filter_Mode(int x, int y, const unsigned short *fp, int width, int height)
+{
+	register int xx, yy;
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,(int)(fp[yy*width+xx] + dis));
+		}
+	}
+}
+
 void Lcd_Draw_Cam_Image_Sharpen_Filter(int x, int y, const unsigned short *fp, int width, int height){
 	register int xx, yy, k, r,nx,ny;
 	static int dx[] = {0,0,-1,1};
@@ -656,6 +699,89 @@ void Lcd_Draw_Cam_Image_Sharpen_Filter(int x, int y, const unsigned short *fp, i
 	}
 }
 
+void Lcd_Draw_Cam_Image_Sobel_Filter(int x, int y, const unsigned short *fp, int width, int height){
+	register int xx, yy, k, nx,ny;
+	register int r,g,b, pixel,result=0;
+	int DIRS = 6;
+
+	int xdy[] = {-1,0,1,-1,0,1};
+	int xdx[] = {-1,-1,-1,1,1,1};
+
+	int ydy[] = {-1,-1,-1,1,1,1};
+	int ydx[] = {-1,0,1,-1,0,1};
+
+	int w[] = {-1,-2,-1,1,2,1};
+
+
+	for(yy=0;yy<height;yy++)
+	{
+		for(xx=0;xx<width;xx++)
+		{
+			result = 0;
+			for( k = 0; k < DIRS; k++){
+				nx = xx + xdx[k]; ny = yy + xdy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+
+				pixel = w[k]*(int)fp[ny*width+nx];
+				r = (pixel >> 11) & (0x1f);
+				g = (pixel >> 6) & (0x1f);
+				b = (pixel) & (0x1f);
+				pixel = (r+g+b)/3;
+				result += ((pixel << 11) & (0xf8000))  | ((pixel << 6) &(0x7e0)) | ((b) &(0x1f));
+
+			}
+			for( k = 0; k < DIRS; k++){
+				nx = xx + ydx[k]; ny = yy + ydy[k];
+				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+
+				pixel = w[k]*(int)fp[ny*width+nx];
+				r = (pixel >> 11) & (0x1f);
+				g = (pixel >> 6) & (0x1f);
+				b = (pixel) & (0x1f);
+				pixel = (r+g+b)/3;
+				result += ((pixel << 11) & (0xf8000))  | ((pixel << 6) &(0x7e0)) | ((b) &(0x1f));
+
+			}
+
+			Lcd_Put_Cam_Pixel555(xx+x,yy+y,result);
+		}
+	}
+}
+
+
+
+void Lcd_Draw_Cam_Laplacian_Filter(int x, int y, const unsigned short *fp, int width, int height){
+	register int xx, yy, k, nx,ny;
+	register int r,g,b, pixel,result;
+	int DIRS = 9;
+	int dy[] = {0,0,-1,-1,-1,0,1,1,1};
+	int dx[] = {0,-1,-1,0,1,1,1,0,-1};
+	int w[] = {8,-1,-1,-1,-1,-1,-1,-1,-1};
+
+	nx = ny = 0;
+
+	for(yy=1;yy<height-1;yy++)
+	{
+		for(xx=1;xx<width-1;xx++)
+		{
+			result = w[0]*(int)fp[ny*width+nx];
+			for( k = 1; k < DIRS; k++){
+				nx = xx + dx[k];
+				ny = yy + dy[k];
+//				if(ny < 0 || ny > 240-1 || nx < 0 || nx > 320-1) continue;
+
+				pixel = w[k]*(int)fp[ny*width+nx];
+				r = (pixel >> 11) & (0x1f);
+				g = (pixel >> 6) & (0x1f);
+				b = (pixel) & (0x1f);
+				pixel = (r+g+b)/3;
+				result += (pixel << 11)  | (pixel << 6) | (pixel);
+			}
+
+			Lcd_Put_Cam_Pixel555(xx+x,yy+y,result);
+		}
+	}
+}
 
 void Lcd_Draw_Cam_Image_Outline_Filter(int x, int y, const unsigned short *fp, int width, int height){
 
@@ -694,16 +820,16 @@ void Lcd_Draw_Cam_Image_Blur_Filter(int x, int y, const unsigned short *fp, int 
 
 	register int xx, yy, k,nx,ny,pixel;
 	int r,g,b;
-	static int dx[] = {0,0,-1,1};
-	static int dy[] = {-1,1,0,0};
-	int DIRS = 4;
-	int divider = 5;
+	static int dx[] = {-1,-1,0,1,1,1,0,-1};
+	static int dy[] = {0,-1,-1,-1,0,1,1,1};
+	int DIRS = 8;
+	int divider = 9;
 
 	for(yy=0;yy<height;yy++)
 	{
 		for(xx=0;xx<width;xx++)
 		{
-			pixel = 1*(int)fp[yy*width+xx];
+			pixel = (int)fp[yy*width+xx];
 			r = ((pixel >> 11) & 0x1f);
 			g = ((pixel >> 5)& 0x3f);
 			b = ((pixel) & 0x1f);
@@ -718,7 +844,7 @@ void Lcd_Draw_Cam_Image_Blur_Filter(int x, int y, const unsigned short *fp, int 
 			}
 			r /= divider;  g /= divider;  b /= divider;
 			pixel = (r << 11) | (g << 5) | (b);
-			Lcd_Put_Cam_Pixel555(xx+x,yy+y,pixel);
+			Lcd_Put_Cam_Pixel(xx+x,yy+y,pixel);
 		}
 	}
 }
@@ -1092,6 +1218,7 @@ void Lcd_Draw_Bar(int x1, int y1, int x2, int y2, int color)
          }
      }
 }
+
 
 ///////////////////////// Font Display functions ////////////////////////
 

@@ -1,0 +1,76 @@
+#include <string.h>
+#include "device_driver.h"
+#define BLOCK 100
+#define FILE_SIZE (240*320)
+
+
+extern int Cam_Width;
+extern int Cam_Height;
+extern unsigned char * captured_img;
+
+unsigned short buff[240][320];
+
+void Print_Data(unsigned char * p){
+	int i, j;
+	for(i=0,j=1;i<20;i++, j++){
+		Uart_Printf("%.8p ",p[i]);
+		if(j % 4 == 0){j=0;Uart_Printf("\n");}
+	}
+}
+
+void Save_Img_To_Nand(void){
+	int cnt;
+	unsigned int q = Nand_Page_2_Addr(BLOCK, 0, 0);
+
+	Uart_Printf(">> 100th block %p \n", q);
+	if(!q){
+		Uart_Printf("Saved failed!!\n");
+		return;
+	}
+
+	memcpy(buff, captured_img, FILE_SIZE*2);
+
+
+	for(cnt = 0; cnt < 10; cnt++){
+		Nand_Erase_Block(BLOCK + cnt);
+	}
+	Nand_Write(q, buff, FILE_SIZE);
+
+	Print_Data(captured_img);
+}
+
+void Disable_Capture(void){
+	CAM_Capture_Run(0,0,0);
+	CAM_Capture_Run(0, Cam_Width, Cam_Height);
+	CAM_Interrupt_Enable(0);
+}
+
+void Enable_Capture(void){
+	CAM_Capture_Run(0,0,0);
+	CAM_Capture_Run(1, Cam_Width, Cam_Height);
+	CAM_Interrupt_Enable(1);
+}
+
+void Show_Saved_Img(void){
+	int i, j;
+	unsigned int q = Nand_Page_2_Addr(BLOCK, 0, 0);
+	Uart_Printf(">> 100th block %p \n", q);
+	unsigned int * r = (unsigned int *)q;
+
+	Print_Data(r);
+
+
+	Nand_Read(q, buff, FILE_SIZE);
+
+
+	short width=320;
+	short height=240;
+	unsigned short p[240][320];
+	Lcd_Select_Draw_Frame_Buffer(0);
+	Nand_Read_Block(BLOCK+i, (U8 *)p);
+	Lcd_Draw_Cam_Image(0,0, (void *)p, width, height);
+
+
+}
+
+

@@ -1,19 +1,39 @@
+#include <string.h>
 #include "device_driver.h"
 #define BLOCK 100
-#define FILE_SIZE (240*(320*3))
-#define LCD_FB0	0x31800000 // 4MB
 
-typedef unsigned int (* LAYER_FRAME)[LCD_XSIZE];
-extern LAYER_FRAME Fb_Layer;
 extern int Cam_Width;
 extern int Cam_Height;
-extern int frm;
-extern unsigned int Display_frame;
+
+static unsigned short buff[240][320];
+
+void Print_Data(unsigned int * p){
+	int i, j;
+	for(i=0,j=1;i<12;i++, j++){
+		Uart_Printf("%.8p ",p[i]);
+		if(j % 4 == 0){j=0;Uart_Printf("\n");}
+	}
+}
 
 void Save_Img_To_Nand(void){
-	unsigned int q = Nand_Page_2_Addr(BLOCK, 0, 0);
-	Nand_Write(q, Fb_Layer, FILE_SIZE);
-	Uart_Printf("Verify : %d\n", Nand_Verify_Block(BLOCK,Fb_Layer));
+	int i, j;
+	unsigned short * captured_img = CAM_Get_Image_Address();
+
+	for(i=0;i<Cam_Height;i++)
+	{
+		for(j=0;j<Cam_Width;j++)
+		{
+			buff[i][j]=captured_img[(i*Cam_Width)+j];
+		}
+	}
+
+	Nand_Erase_Block(BLOCK);
+	Nand_Write_Block(BLOCK,(U8 *)buff);
+	Uart_Printf("verify %d \n", Nand_Verify_Block(BLOCK, (U8 *)buff));
+
+	Uart_Printf("=====\n");
+//	Print_Data(captured_img);
+	Print_Data((unsigned int * )buff);
 }
 
 void Disable_Capture(void){
@@ -29,11 +49,12 @@ void Enable_Capture(void){
 }
 
 void Show_Saved_Img(void){
-	static unsigned char buff[FILE_SIZE * 4] = {0};
-	unsigned int q = Nand_Page_2_Addr(BLOCK, 0, 0);
+	Lcd_Select_Draw_Frame_Buffer(0);
+	Nand_Read_Block(BLOCK, (U8 *)buff);
+	Lcd_Draw_Cam_Image(0,0, (void *)buff, Cam_Width, Cam_Height);
 
-	Nand_Read(q, buff, FILE_SIZE);
- 	Lcd_Select_Draw_Frame_Buffer(frm);
-	Lcd_Draw_Cam_Image(0, 0, (void *)buff, Cam_Width, Cam_Height);
-	Lcd_Set_Address(buff);
+	Uart_Printf("=====\n");
+	Print_Data((unsigned int * )buff);
 }
+
+

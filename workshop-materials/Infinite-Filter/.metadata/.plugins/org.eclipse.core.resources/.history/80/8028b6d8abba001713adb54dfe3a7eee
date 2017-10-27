@@ -1,0 +1,500 @@
+//#include "2440addr.h"
+//#include "device_driver.h"
+//#include "macro.h"
+//#include "./Images/left.h"
+//#include "./Images/right.h"
+//#include "./Images/play.h"
+//#include "./Images/pause.h"
+//#include "./Images/home.h"
+//#include "./Images/rotate.h"
+//#include "./Images/normal.h"
+//#include "./Images/scary.h"
+//
+//extern volatile int DMA_complete[];
+//extern volatile int Touch_pressed;
+//extern volatile int Touch_x, Touch_y;
+//extern volatile int Timer0_time_out;
+//extern char * Cam_Frame_Buf;
+//int vol=1;
+//int finish;
+//int frm = 0;
+//unsigned int address, block;
+//unsigned int offset, size, frame;
+//unsigned int Play_transfer_size;
+//unsigned char * p[2];
+//unsigned int len;
+//unsigned int file_len[2]={song1_len,song2_len};
+//
+//UNI_SRCC srcc;
+//UNI_DSTC dstc;
+//UNI_DCON dcon;
+//IIS_WAV sound = {0,0,0};
+//
+//void Init_display(void)
+//{
+//	Lcd_Control_Brightness(5);
+//	Lcd_Select_Buffer_Mode(LAYER_MODE);
+//	Lcd_Select_Draw_Frame_Buffer(0);
+//	Lcd_Select_Display_Frame_Buffer(0);
+//	Lcd_Set_Trans_Mode(0);
+//	Lcd_Set_Shape_Mode(0,0);
+//	Lcd_Set_Shape_Back_Image_Mode(0, (void *)0);
+//	Lcd_Clr_Screen(WHITE);
+//}
+//void Init_display_for_player(void)
+//{
+//	Lcd_Control_Brightness(5);
+//	Lcd_Select_Buffer_Mode(LAYER_MODE);
+//	Lcd_Select_Draw_Frame_Buffer(0);
+//	Lcd_Select_Display_Frame_Buffer(0);
+//	Lcd_Set_Trans_Mode(0);
+//	Lcd_Set_Shape_Mode(0,0);
+//	Lcd_Set_Shape_Back_Image_Mode(0, (void *)0);
+//	Lcd_Clr_Screen(WHITE);
+//	Lcd_Draw_BMP(pos_left_x, pos_left_y, left);
+//	Lcd_Draw_BMP(pos_pause_x, pos_pause_y, pause);
+//	Lcd_Draw_BMP(pos_right_x, pos_right_y, right);
+//	Lcd_Draw_BMP(pos_home_x, pos_home_y, home);
+//	Lcd_Draw_Rect(pos_time_x,pos_time_y,pos_time_x+time_size_x,pos_time_y+time_size_y,BLUE);
+//	Lcd_Printf(pos_vol_x,pos_vol_y,BLUE,WHITE,1,1,"%s","Volume");
+//	Lcd_Printf(pos_vol_x+font_size,pos_vol_y+font_size,BLACK,WHITE,1,1,"%d",vol);
+//}
+//void Read_WAV_From_Nand(void)
+//{
+//	if(sound.Play_file_size > (DMA_TC_SIZE * (sound.Play_bit_per_sample/8)))
+//	{
+//		Play_transfer_size = DMA_TC_SIZE;
+//		sound.Play_file_size = sound.Play_file_size - DMA_TC_SIZE * (sound.Play_bit_per_sample/8);
+//	}
+//	else
+//	{
+//		Play_transfer_size = sound.Play_file_size / (sound.Play_bit_per_sample/8);
+//		sound.Play_file_size = 0;
+//	}
+//	frame = frame?(frame-1):(frame+1);
+//	Nand_Read(address, (U8 *)p[frame], Play_transfer_size * (sound.Play_bit_per_sample/8));
+//	address = address + Play_transfer_size * (sound.Play_bit_per_sample/8);
+//	dcon.st.TC = Play_transfer_size;
+//}
+//void Draw_Bar(int i)
+//{
+//	double pct;
+//	pct=len/(double)(file_len[i]);
+//	Lcd_Printf(elapsed_time_title_x,elapsed_time_title_y,BLUE,WHITE,1,1,"Elapsed Time");
+//	Lcd_Printf(elapsed_time_data_x+font_size,elapsed_time_data_y,BLACK,WHITE,1,1,"%02d:%02d",(len/60)%60,len%60);
+//	Lcd_Printf(total_time_title_x,total_time_title_y,BLUE,WHITE,1,1,"Total Time");
+//	Lcd_Printf(total_time_data_x+font_size,total_time_data_y,BLACK,WHITE,1,1,"%02d:%02d",(file_len[i]/60)%60,file_len[i]%60);
+//	Lcd_Printf(pro_pct_title_x,pro_pct_title_y,BLUE,WHITE,1,1,"Percent");
+//	Lcd_Printf(pro_pct_data_x+font_size,pro_pct_data_y,BLACK,WHITE,1,1,"%2d%%",(int)(pct*100));
+//	Lcd_Draw_Bar(pos_time_x,pos_time_y,pos_time_x+(int)((pct)*time_size_x),pos_time_y+time_size_y,GREEN);
+//}
+//void Joystick_Init(void)
+//{
+//	Macro_Write_Block(rGPFCON, 0xff, 0x00, 8);
+//	Macro_Write_Block(rGPCCON, 0x3, 0x1, 16);
+//	Macro_Clear_Bit(rGPCDAT, 8);
+//}
+//void DMA_Init(void)
+//{
+//	srcc.udata = 0;
+//	srcc.st.INC = DMA_ADDR_INC;
+//	srcc.st.LOC = DMA_LOC_AHB;
+//	dstc.udata = 0;
+//	dstc.st.INC = DMA_ADDR_FIX;
+//	dstc.st.LOC = DMA_LOC_APB;
+//	dstc.st.CHK_INT = DMA_INT_TC;
+//	dcon.udata = 0;
+//	dcon.st.DMD_HS = DMA_DEMAND;
+//	dcon.st.SYNC = DMA_SYNC_PCLK;
+//	dcon.st.INT = DMA_INT_EN;
+//	dcon.st.TSZ = DMA_TSZ_1UNIT;
+//	dcon.st.SERVMODE = DMA_SVC_SINGLE;
+//	dcon.st.HWSRCSEL = DMA_HWSRC_CH2_I2SSDO;
+//	dcon.st.SWHW_SEL = DMA_TRIGGER_HW;
+//	dcon.st.RELOAD = DMA_RELOAD_OFF;
+//	dcon.st.DSZ = DMA_DSZ_2B;
+//}
+//void Volume_up(void)
+//{
+//	if(vol<9)
+//	{
+//		vol++;
+//		Sound_Control_Headphone_Volume(vol);
+//	}
+//}
+//void Volume_down(void)
+//{
+//	if(vol>0)
+//	{
+//		vol--;
+//		Sound_Control_Headphone_Volume(vol);
+//	}
+//}
+//void song_select_and_ready(int i)
+//{
+//	frame = 0;
+//	finish = 0;
+//	DMA_complete[2] = 1;
+//	Nand_Read(block+i*8, (U8 *)&offset, 4);
+//	Nand_Read(block+i*8+4, (U8 *)&size, 4);
+//	Nand_Read(block+offset, (U8 *)p[0], 44);
+//	address = block + offset + 44;
+//	//곡 정보
+//	Sound_Get_WAV_Info(&sound, p[0]);
+//	Lcd_Printf(info_x,info_y,BLUE,WHITE,1,1,"[INFO]");
+//	Lcd_Printf(song_num_x,song_num_y,BLUE,WHITE,1,1,"1)Song No.%d",i+1);
+//	Lcd_Printf(freq_title_x,freq_title_y,BLUE,WHITE,1,1,"2)%s","Play sample freq");
+//	Lcd_Printf(freq_data_x,freq_data_y,BLACK,WHITE,1,1,"%dHz",sound.Play_sample_freq);
+//	Lcd_Printf(bps_title_x,bps_title_y,BLUE,WHITE,1,1,"3)%s","Bit per sample");
+//	Lcd_Printf(bps_data_x,bps_data_y ,BLACK,WHITE,1,1,"%d",sound.Play_bit_per_sample);
+//	DMA_Init();
+//	Read_WAV_From_Nand();
+//	Sound_Control_Headphone_Volume(vol);
+//	Sound_Set_Sampling_Rate(sound.Play_sample_freq);
+//	Sound_Set_Mode(IIS_TX_ONLY, sound.Play_bit_per_sample);
+//	Sound_IIS_Start();
+//}
+//void Draw_menu(int num, int i)
+//{
+//	Lcd_Clr_Screen(WHITE);
+//	Lcd_Draw_BMP(pos_left_x, pos_left_y, left);
+//	if(num==0) Lcd_Draw_BMP(pos_pause_x, pos_pause_y, pause);
+//	else Lcd_Draw_BMP(pos_play_x, pos_play_y, play);
+//	Lcd_Draw_BMP(pos_right_x, pos_right_y, right);
+//	Lcd_Draw_Rect(pos_time_x,pos_time_y,pos_time_x+time_size_x,pos_time_y+time_size_y,BLUE);
+//	Lcd_Printf(pos_vol_x,pos_vol_y,BLUE,WHITE,1,1,"%s","Volume");
+//	Lcd_Printf(pos_vol_x+font_size,pos_vol_y+font_size,BLACK,WHITE,1,1,"%d",vol);
+//	Lcd_Draw_BMP(pos_home_x, pos_home_y, home);
+//	Lcd_Printf(info_x,info_y,BLUE,WHITE,1,1,"[INFO]");
+//	Lcd_Printf(song_num_x,song_num_y,BLUE,WHITE,1,1,"1)Song No.%d",i+1);
+//	Lcd_Printf(freq_title_x,freq_title_y,BLUE,WHITE,1,1,"2)%s","Play sample freq");
+//	Lcd_Printf(freq_data_x,freq_data_y,BLACK,WHITE,1,1,"%dHz",sound.Play_sample_freq);
+//	Lcd_Printf(bps_title_x,bps_title_y,BLUE,WHITE,1,1,"3)%s","Bit per sample");
+//	Lcd_Printf(bps_data_x,bps_data_y ,BLACK,WHITE,1,1,"%d",sound.Play_bit_per_sample);
+//}
+//
+//void Toggle_Frame(void)
+//{
+//	if(frm) frm = 0;
+//	else frm = 1;
+//}
+//
+//void ft_for_player(void)
+//{
+//	int i=0;
+//	int cnt=0;
+//	int lock[4]={0,0,0,0};
+//	p[0] = Get_Heap_Base();
+//	p[1] = p[0] + 0x100000;
+//	Nand_Init();
+//	Sound_Init();
+//	Uart_Init(115200);
+//	Led_Init();
+//	Joystick_Init();
+//	Lcd_Graphic_Init();
+//	Touch_ISR_Enable(1);
+//	block = Nand_Page_2_Addr(WAV_BLO, 0, 0);	//음악은 100~275번 블럭이 저장됨
+//	Sound_Control_Soft_Mute(0);
+//	Init_display_for_player();
+//	len=0;
+//	Timer0_Repeat_ISR_Enable(1, 1000);
+//	Uart_Printf("Player\n");
+//	for(;;)
+//	{
+//		frame = 0;
+//		finish = 0;
+//		DMA_complete[2] = 1;
+//		Draw_Bar(i);
+//		song_select_and_ready(i);
+//		Draw_menu(cnt,i);
+//		for(;;)
+//		{
+//			Draw_Bar(i);
+//			if(Timer0_time_out)
+//			{
+//				Timer0_time_out=0;
+//				len++;
+//			}
+//			if(DMA_complete[2] && !finish)
+//			{
+//				DMA_complete[2] = 0;
+//				DMA_Start(2, (void *)p[frame], (void *)IISFIFO, srcc, dstc, dcon);
+//				if(sound.Play_file_size == 0) finish = 1;
+//				else Read_WAV_From_Nand();
+//			}
+//
+//			if(DMA_complete[2] && finish)
+//			{
+//				Uart_Printf("Stop\n");
+//				Sound_Stop_Sound();
+//				len=0;
+//				i=(i+1)% (NUM_OF_SONG);
+//				break;
+//			}
+//			if((lock[0] == 0) && Macro_Check_Bit_Clear(rGPFDAT, 4))	//up
+//			{
+//				Volume_up();
+//				Lcd_Printf(pos_vol_x,pos_vol_y,BLUE,WHITE,1,1,"%s","Volume");
+//				Lcd_Printf(pos_vol_x+font_size,pos_vol_y+font_size,BLACK,WHITE,1,1,"%d",vol);
+//				lock[0] = 1;
+//			}
+//			else if((lock[0] == 1) && Macro_Check_Bit_Set(rGPFDAT, 4))
+//			{
+//				lock[0] = 0;
+//			}
+//
+//			if((lock[1] == 0) && Macro_Check_Bit_Clear(rGPFDAT, 6))	//down
+//			{
+//				Volume_down();
+//				Lcd_Printf(pos_vol_x,pos_vol_y,BLUE,WHITE,1,1,"%s","Volume");
+//				Lcd_Printf(pos_vol_x+font_size,pos_vol_y+font_size,BLACK,WHITE,1,1,"%d",vol);
+//				lock[1] = 1;
+//			}
+//
+//			else if((lock[1] == 1) && Macro_Check_Bit_Set(rGPFDAT, 6))
+//			{
+//				lock[1] = 0;
+//			}
+//
+//			if(Touch_pressed)
+//			{
+//				if((pos_left_x<=Touch_x&&Touch_x<=pos_left_x+pic_size) && (pos_left_y<=Touch_y&&Touch_y<=pos_left_y+pic_size) )	//prev
+//				{
+//					while(Touch_pressed);
+//					i=(i+1)% (NUM_OF_SONG);
+//					len=0;
+//					song_select_and_ready(i);
+//					Draw_menu(cnt,i);
+//				}
+//				if((pos_play_x<=Touch_x&&Touch_x<=pos_play_x+pic_size) && (pos_play_y<=Touch_y&&Touch_y<=pos_play_y+pic_size) && cnt==1)	//play/pause
+//				{
+//					while(Touch_pressed);
+//					Timer0_Repeat_ISR_Enable(1, 1000);
+//					Lcd_Draw_BMP(pos_play_x, pos_play_y, pause);
+//					cnt=0;
+//				}
+//				else if((pos_pause_x<=Touch_x&&Touch_x<=pos_pause_x+pic_size) && (pos_pause_y<=Touch_y&&Touch_y<=pos_pause_y+pic_size)&& cnt==0)
+//				{
+//					while(Touch_pressed);
+//					Timer0_Stop();
+//					Lcd_Draw_BMP(pos_pause_x, pos_pause_y, play);
+//					cnt=1;
+//				}
+//				if((pos_right_x<=Touch_x&&Touch_x<=pos_right_x+pic_size) && (pos_right_y<=Touch_y&&Touch_y<=pos_right_y+pic_size))	//next
+//				{
+//					while(Touch_pressed);
+//					i=(i+(NUM_OF_SONG-1))% (NUM_OF_SONG);
+//					len=0;
+//					song_select_and_ready(i);
+//					Draw_menu(cnt,i);
+//				}
+//				if((pos_home_x<=Touch_x&&Touch_x<=pos_home_x+pic_size) && (pos_home_y<=Touch_y&&Touch_y<=pos_home_y+pic_size))	//home
+//				{
+//					while(Touch_pressed);
+//					Sound_Stop_Sound();
+//					return ;
+//				}
+//			}
+//			Sound_Play_Pause(cnt);
+//		}
+//	}
+//}
+//void ft_for_camera(void)
+//{
+//	int Cam_Width  = 320;
+//	int Cam_Height = 240;
+//	unsigned short p[Cam_Height][Cam_Width];
+//	unsigned short *q;
+//	int cnt=0;
+//	unsigned int flag=3;
+//	int ind=1;
+//	unsigned int addr;
+//	int i,j;
+//	Cam_Frame_Buf = (char *)Free_Memory_BASE;
+//	Nand_Init();
+//	Init_display();
+//
+//	CAM_Camera_Init();
+//	CAM_Module_Init();
+//	CAM_Sensor_Enable(1);
+//	CAM_Sensor_Enable(0);
+//
+//	CAM_Set_Capture_Status(0);
+//	CAM_Capture_Run(0,0,0);
+//	CAM_Capture_Run(1, Cam_Width, Cam_Height);
+//	CAM_XY_Flip(0,0);
+//	Touch_ISR_Enable(1);
+//	CAM_Interrupt_Enable(1);
+//	Uart_Printf("Camera\n");
+//	for(;;)
+//	{
+//		Lcd_Draw_BMP(pos_rotate_x, pos_rotate_y, rotate);
+//		if(cnt==0) Lcd_Draw_BMP(pos_play_x, pos_play_y, pause);
+//		else Lcd_Draw_BMP(pos_play_x, pos_play_y, play);
+//		Lcd_Draw_BMP(pos_home_x, pos_home_y, home);
+//		if(ind==1) Lcd_Draw_BMP(pos_scary_x, pos_scary_y, scary);
+//		else Lcd_Draw_BMP(pos_normal_x, pos_normal_y, normal);
+//		if(CAM_Get_Capture_Status() == 2)
+//		{
+//			CAM_Set_Capture_Status(0);
+//			q = CAM_Get_Image_Address();
+//			Lcd_Select_Draw_Frame_Buffer(frm);
+//			Lcd_Draw_Cam_Image(0, 0, (void *)q, Cam_Width, Cam_Height);
+//			Lcd_Select_Display_Frame_Buffer(frm);
+//			Toggle_Frame();
+//		}
+//		if(Touch_pressed)
+//		{
+//			if((pos_left_x<=Touch_x&&Touch_x<pos_left_x+pic_size) && (pos_left_y<=Touch_y&&Touch_y<=pos_left_y+pic_size))	//play/pause
+//			{
+//				while(Touch_pressed);
+//				flag=~flag;
+//				Macro_Write_Block(rCIPRTRGFMT,0x3,flag&0x3,14);
+//			}
+//
+//			if((pos_play_x<=Touch_x&&Touch_x<=pos_play_x+pic_size) && (pos_play_y<=Touch_y&&Touch_y<=pos_play_y+pic_size))	//play/pause
+//			{
+//				while(Touch_pressed);
+//				CAM_Capture_Pause();
+//				//400~419번까지 사용
+//				if(cnt<5)	//test
+//				{
+//					for(i=0;i<Cam_Height;i++)
+//					{
+//						for(j=0;j<Cam_Width;j++)
+//						{
+//							p[i][j]=q[(i*Cam_Width)+j];
+//						}
+//					}
+//					Nand_Erase_Block(PLC_BLO+cnt);
+//					Nand_Write_Block(PLC_BLO+cnt,(U8 *)p);
+//					cnt++;
+//				}
+//				else Uart_Printf("Full!\n");
+//			}
+//			else if((pos_pause_x<=Touch_x&&Touch_x<=pos_pause_x+pic_size) && (pos_pause_y<=Touch_y&&Touch_y<=pos_pause_y+pic_size))
+//			{
+//				while(Touch_pressed);
+//				CAM_Capture_Restart();
+//			}
+//			if((pos_right_x<=Touch_x&&Touch_x<pos_right_x+pic_size) && (pos_right_y<=Touch_y&&Touch_y<=pos_right_y+pic_size))	//play/pause
+//			{
+//				ind=1-ind;
+//				while(Touch_pressed);
+//				Macro_Invert_Bit(rCISRCFMT,30);
+//			}
+//			else if((pos_home_x<=Touch_x&&Touch_x<=pos_home_x+pic_size) && (pos_home_y<=Touch_y&&Touch_y<=pos_home_y+pic_size))	//home
+//			{
+//				while(Touch_pressed);
+//				CAM_Capture_Run(0,0,0);
+//				CAM_Capture_Run(1, Cam_Width, Cam_Height);
+//				CAM_Interrupt_Enable(0);
+//				return;
+//			}
+//		}
+//	}
+//}
+//void select_pic(int i)
+//{
+//	short width=320;
+//	short height=240;
+//	unsigned short p[240][320];
+//	Lcd_Select_Draw_Frame_Buffer(0);
+//	Nand_Read_Block(PLC_BLO+i, (U8 *)p);
+//	Lcd_Draw_Cam_Image(0,0, (void *)p, width, height);
+//}
+//void ft_for_gallery(void)
+//{
+//	int i=0;
+//	int lock[2]={0,0};
+//	volatile int j;
+//	int chattering_interval=1000;
+//	Uart_Init(115200);
+//	Led_Init();
+//	Joystick_Init();
+//	Lcd_Graphic_Init();
+//	Init_display();
+//	Uart_Printf("Gallery\n");
+//	Uart_Printf("Press L/R button of joystick to move pictures.\n");
+//	Uart_Printf("Press Enter button of joystick to move main menu screen.\n");
+//	for(;;)
+//	{
+//		select_pic(i);
+//		if((lock[0] == 0) && Macro_Check_Bit_Clear(rGPFDAT, 5))	//left
+//		{
+//			for(j=0;j<chattering_interval;j++);
+//			i=(i+NUM_OF_PICS-1)%NUM_OF_PICS;
+//			lock[0] = 1;
+//		}
+//		else if((lock[0] == 1) && Macro_Check_Bit_Set(rGPFDAT, 5))
+//		{
+//			lock[0] = 0;
+//		}
+//		if((lock[1] == 0) && Macro_Check_Bit_Clear(rGPFDAT, 7))	//left
+//		{
+//			for(j=0;j<chattering_interval;j++);
+//			i=(i+1)%NUM_OF_PICS;
+//			lock[1] = 1;
+//		}
+//		else if((lock[1] == 1) && Macro_Check_Bit_Set(rGPFDAT, 7))
+//		{
+//			lock[1] = 0;
+//		}
+//		if(Macro_Check_Bit_Clear(rGPFDAT, 0))	//enter
+//		{
+//			return;
+//		}
+//	}
+//}
+//
+//void Main(void)
+//{
+//	int address_main;
+//	short width, height;
+//	int i=0;
+//	unsigned short p[240][320];
+//
+//	label:
+//	Nand_Init();
+//	Sound_Init();
+//	Uart_Init(115200);
+//	Led_Init();
+//	Joystick_Init();
+//	Lcd_Graphic_Init();
+//	Touch_ISR_Enable(1);
+//	Init_display();
+//	// Main 이미지 NAND는 600~601번임
+//	address_main= Nand_Page_2_Addr( MAIN_BLO, 0, 0);
+//	Lcd_Select_Draw_Frame_Buffer(i);
+//	Nand_Read(address_main+i*8, (U8 *)&offset, 4);
+//	Nand_Read(address_main+i*8+4, (U8 *)&width, 2);
+//	Nand_Read(address_main+i*8+6, (U8 *)&height, 2);
+//	Uart_Printf("[%d] OFFSET=%u, W=%d, H=%d\n", i, offset, width, height);
+//	Nand_Read(address_main+offset, (U8 *)p, width*height*2);
+//	Lcd_Draw_Image(0,0, (void *)p, width, height);
+//
+//	for(;;)
+//	{
+//		if(Touch_pressed)
+//		{
+//			if((pos_player_x<=Touch_x&&Touch_x<=pos_player_x+icon_size) && (pos_player_y<=Touch_y&&Touch_y<=pos_player_y+icon_size))
+//			{
+//				while(Touch_pressed);
+//				ft_for_player();
+//				goto label;
+//			}
+//			if ((pos_carema_x<=Touch_x&&Touch_x<=pos_carema_x+icon_size) && (pos_carema_y<=Touch_y&&Touch_y<=pos_carema_y+icon_size))
+//			{
+//				while (Touch_pressed);
+//				ft_for_camera();
+//				goto label;
+//			}
+//			if ((pos_gallery_x<=Touch_x&&Touch_x<=pos_gallery_x+icon_size) && (pos_gallery_y<=Touch_y&&Touch_y<=pos_gallery_y+icon_size))
+//			{
+//				while (Touch_pressed);
+//				ft_for_gallery();
+//				goto label;
+//			}
+//		}
+//	}
+//}

@@ -1,9 +1,0 @@
-#include "device_driver.h"
-#define BLOCK 100
-extern LAYER_FRAME Fb_Layer;
-void Save_Img_To_Nand(void){
-	unsigned int addr = Nand_Page_2_Addr(BLOCK, 0, 0);
-	unsigned short *q = (unsigned short *)CAM_Check_Image_Ready();
-
-	Nand_Write_Block(BLOCK,Fb_Layer);
-}

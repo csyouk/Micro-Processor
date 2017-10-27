@@ -1,4 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Delete resource &apos;Infinite-Filter/Copy of custom.c&apos;" deleteContents="false" description="Delete resource &apos;Infinite-Filter/Copy of custom.c&apos;" element1="/Infinite-Filter/Copy of custom.c" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1509063289608"/>
+<session version="1.0">&#x0A;<refactoring comment="Delete resource &apos;Infinite-Filter/Copy of custom.c&apos;" deleteContents="false" description="Delete resource &apos;Infinite-Filter/Copy of custom.c&apos;" element1="/Infinite-Filter/Copy of custom.c" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1509063289608"/>&#x0A;<refactoring comment="Delete 3 resources" deleteContents="false" description="Delete 3 resources" element1="/CAMERA_EXT_EX" element2="/FAT_File_System_EX" element3="/IIC_IIS_CODEC_EX" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="3" stamp="1509084190000"/>
 </session>
